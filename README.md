@@ -11,3 +11,4 @@ Mostly I just want to take this as a roadmap of my own skill development, and ho
 [redis摘要总结](https://github.com/morfies/tutorial/wiki/redis-%E6%91%98%E8%A6%81%E6%80%BB%E7%BB%93)  
 [redis分布式锁实现](https://github.com/morfies/tutorial/wiki/Redis%E5%88%86%E5%B8%83%E5%BC%8F%E9%94%81%E7%9A%84%E5%AE%9E%E7%8E%B0)  
 [use CORS to enable js cross site access](https://github.com/morfies/tutorial/wiki/use-CORS-to-enable-js-cross-site-access)
+[大型软件系统架构的一些原则]
