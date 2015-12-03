@@ -77,20 +77,48 @@ Wrong:
 
 
 # Express 项目目录结构
-* controllers 存放所有router文件，router中的逻辑尽量精简，复杂逻辑封装进库
-* helpers 第三方库或者自己封装的一些辅助类库，比如整个项目的config.js,自定义配置的logger.js,基础工具库baseUtil.js等等
-* middlewares 中间件文件，比如健全，数据封装等
-* models 数据层文件，封装数据库操作
-* libs 复杂逻辑封装入库
-* public 前端静态资源(后期这些资源可以选择性放CDN)
-* views 前端页面模板(后期这些资源可以选择性放CDN)
-* package.json 本项目的依赖库
-* pm2config.json 如果使用pm2，这个文件放置pm2的启动配置
-* index.js 项目入口文件，加载资源、启动监听
+* `controllers` 存放所有router文件，router中的逻辑尽量精简，复杂逻辑封装进库
+* `helpers` 第三方库或者自己封装的一些辅助类库，比如整个项目的config.js,自定义配置的logger.js,基础工具库baseUtil.js等等
+* `middlewares` 中间件文件，比如健全，数据封装等
+* `models` 数据层文件，封装数据库操作
+* `libs` 复杂逻辑封装入库
+* `public` 前端静态资源(后期这些资源可以选择性放CDN)
+* `views` 前端页面模板(后期这些资源可以选择性放CDN)
+* `package.json` 本项目的依赖库
+* `pm2config.json` 如果使用pm2，这个文件放置pm2的启动配置
+* `index.js` 项目入口文件，加载资源、启动监听
 
 # 常用组件
-* 数据库使用mysql2(基于mysql)，一定要用连接池。[连接示例](https://github.com/morfies/tutorial/blob/node-lyn/code/mysql2-conn.js)
-* 缓存使用ioredis(redis也不错，ioredis的benchmark更好)，可以使用express-redis-cache简单的对路由级别进行缓存
-* 日志使用bunyan，生成json格式日志，就是time格式不能自定义，ISO格式看不懂的话，需要自己塞比如Date().toLocaleString()进去
-* 
+* 数据库使用`mysql2`(基于mysql)，一定要用连接池。[连接示例](https://github.com/morfies/tutorial/blob/node-lyn/code/mysql2-conn.js)
+* 缓存使用`ioredis`(redis也不错，ioredis的benchmark更好)，可以使用`express-redis-cache`简单的对路由级别进行缓存
+* 日志使用`bunyan`，生成`json`格式日志，就是`time`格式不能自定义，ISO格式看不懂的话，需要自己塞比如`Date().toLocaleString()`进去;
+  winston用作日志，可以添加exceptionHandlers，在程序出现异常时可以扑捉异常信息到日志文件
+* 邮件模块使用nodemailer
+* `express-session & connection-redis` for [session](https://github.com/morfies/tutorial/blob/node-lyn/code/session.js)
+* 加密密码用bcrypt
+* 队列有`bull`和`kue`可以选择，两者都是基于`redis`的，都有持久化功能，`kue`有web界面可以查看队列情况；需要注意的是目前`bull`中有使用阿里云`kvstore`不支持的指令
+* 二维码生成使用的是qr-image
+```js
+router.get('/qr/:text', function(req, res) {
+	var text = req.params.text;
+	if (util.isEmpty(text)) {
+		res.send("no text to qr encode");
+		return;
+	}
+	text = decodeURIComponent(text);
+	console.log("=======qr==text:" + text);
+	var code = qr.image(text, {
+		type: 'png',
+		ec_level: 'H',
+		size: 10,
+		margin: 0
+	});
+	res.setHeader('Content-type', 'image/png');
+	code.pipe(res);
+});
+```
+* 测试框架`mocha`；断言库:`should.js, expect.js, chai`；覆盖率`instanbul, jscover, blanket`；Mock库`muk`；测试私有方法:`rewire`；web测试: `supertest`；持续集成: `Travis-cli`
+* 物流系统，直接使用第三方API，[爱快递](http://www.aikuaidi.cn/api/)或者[聚合数据](http://www.juhe.cn/docs/api/id/43)
+
+
 
