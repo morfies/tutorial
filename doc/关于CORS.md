@@ -368,7 +368,7 @@ $.ajax({
 ![Server Flow](http://www.html5rocks.com/static/images/cors_server_flowchart.png)
 
 
-
+本文翻译来源 http://www.html5rocks.com/en/tutorials/cors/#disqus_thread，如有不对，欢迎指正
 
 
 
