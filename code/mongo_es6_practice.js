@@ -3,9 +3,6 @@ const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017/test';
 const co = require('co');
 
-function * getDoc(docname) {
-    return yield MongoClient.connect(url);
-}
 // create unique index
 function createIndex() {
     getDoc('docOne').then(doc => {
@@ -44,27 +41,17 @@ function * normalInsert() {
         };
         let result = yield doc.insert(data);
         console.log(result);
+        db.close(); //need to close db connection
         return result;
     } catch (e) {
         console.log('eeeeeeeeeeeeeeeeeeee', e);
-        return e;
+        throw e;        //need to throw error in order for outer branch to catch it
     }
 }
 // drop a doc
 function dropDoc() {
     getDoc('docOne').then(doc => {
         doc.drop();
-    })
-}
-// get indexes
-function getIndexes() {
-    getDoc('docOne').then(doc => {
-        var i = doc.listIndexes(function(err, result) {
-            console.log(err || result)
-        });
-        console.log('indexes:', i);
-    }).catch(function(e) {
-        console.log('err:', e);
     })
 }
 
@@ -75,7 +62,7 @@ co(normalInsert).then(function(result) {
 }).catch(function(e) {
     console.log('in the reject branch, reason:', e);
 });
-/*
+/*  first time, data should be inserted successfully, resolve branch should go
 { result: { ok: 1, n: 1 },
   ops:
    [ { name: 'Lily',
@@ -96,7 +83,8 @@ in the resolve branch, result: { result: { ok: 1, n: 1 },
  
 // should go wrong, because of unique index
 co(normalInsert);
-/*
+
+/* after we set up unique index on name field, reject branch should be reached to handle errors.
 eeeeeeeeeeeeeeeeeeee { [MongoError: E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }]
   name: 'MongoError',
   message: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
@@ -107,7 +95,7 @@ eeeeeeeeeeeeeeeeeeee { [MongoError: E11000 duplicate key error index: test.docOn
   getOperation: [Function],
   toJSON: [Function],
   toString: [Function] }
-in the resolve branch, result: { [MongoError: E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }]
+in the reject branch, reason: { [MongoError: E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }]
   name: 'MongoError',
   message: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
   driver: true,
