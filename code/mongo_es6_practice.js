@@ -106,3 +106,59 @@ in the reject branch, reason: { [MongoError: E11000 duplicate key error index: t
   toJSON: [Function],
   toString: [Function] }
  */
+
+
+// 2, test updateOne
+function* updateFirstLevelField(){
+    try {
+        let db = yield MongoClient.connect(url);
+        let doc = db.collection('docOne');
+        var newObj = {
+            desc: 'hahaha with $currentDate operator',
+            name: 'morfies'
+        };
+        let result = yield doc.updateOne({_id:new ObjectId("56710bdc20b525e44db2eacf")}, 
+                    {$set:newObj, $currentDate:{updateDate: true}});
+        console.log(result);
+        db.close();
+        return result;
+    } catch (e) {
+        throw e;
+    }
+}
+
+// co(updateFirstLevelField);
+
+// 3, test update child document
+// refer to mongodb-manual for more detail about nested document operation
+function* updateChildDocField(){
+    try {
+        let db = yield MongoClient.connect(url);
+        let doc = db.collection('docOne');
+        let result = yield doc.updateOne({"name": "morfies"},
+                    {$set:{"career.0.position":"new position"}})
+        db.close();
+        return result;
+    } catch (e) {
+        console.log(e);
+        throw e;
+    }
+}
+
+//co(updateChildDocField);
+
+// 4, test find from nested doc
+function* findByChildDocField(){
+    try {
+        let db = yield MongoClient.connect(url);
+        let doc = db.collection('docOne');
+        let result = yield doc.findOne({"career.type": 1});
+        db.close();
+        console.log(result);
+        return result;
+    } catch (e) {
+        throw e;
+    }
+}
+// co(findByChildDocField);
+
