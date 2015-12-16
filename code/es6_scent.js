@@ -28,4 +28,3 @@ function* userInfo(mid){
 }
 
 // 终于尝到了generator的美
-无论
