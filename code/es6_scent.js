@@ -21,6 +21,8 @@ function* userInfo(mid){
         let db = yield MongoClient.connect(url);
         let doc = db.collection('user');
         var user = doc.findOne({mid: mid}, {'mid': 1, 'w': 1, 'h': 1, 'sex': 1});
+        // connection need to be closed
+        db.close();
         return user;
     } catch (e) {
         throw e;
