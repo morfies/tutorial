@@ -162,3 +162,37 @@ function* findByChildDocField(){
 }
 // co(findByChildDocField);
 
+// 5, update child doc, incr number field
+// use the positional "$" operator
+//
+function* incrChildDocField(){
+    try {
+        let db = yield MongoClient.connect(url);
+        let doc = db.collection('docOne');
+        let result = yield doc.updateOne({'name':'morfies','career.year':1985},
+                                         {$inc: {'career.$.type':10}});
+        console.log(result);
+        db.close();
+        return result;
+    }catch(e){
+        throw e;
+    }
+}
+//co(incrChildDocField);
+
+// 6, update child doc, add item into nested array
+// $ne: return true if values are not equivalent
+function* addItemToNestedArray(){
+    try {
+        let db = yield MongoClient.connect(url);
+        let doc = db.collection('docOne');
+        let result = yield doc.updateOne({'name': 'morfies', 'career.year':{$ne: 2001}},
+                                         {$addToSet: {"career": {'year':2001, 'position':'chef','type':1}}});
+        console.log(result);
+        db.close();
+        return result;
+    } catch (e) {
+        throw e;
+    }
+}
+co(addItemToNestedArray);
