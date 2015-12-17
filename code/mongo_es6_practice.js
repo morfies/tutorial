@@ -182,6 +182,7 @@ function* incrChildDocField(){
 
 // 6, update child doc, add item into nested array
 // $ne: return true if values are not equivalent
+// result: add new item to career Array if no item's year is 2001, if already, nothing will do
 function* addItemToNestedArray(){
     try {
         let db = yield MongoClient.connect(url);
