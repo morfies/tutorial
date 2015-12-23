@@ -1,0 +1,33 @@
+{
+  "engines": {
+    "node": "4.2.3"
+  },
+  "name": "pushup",
+  "version": "1.0.0",
+  "description": "pushup built from koa2 and node 4",
+  "main": "index.js",
+  "scripts": {
+    "test": "make test"
+  },
+  "keywords": [
+    "koa2",
+    "node4"
+  ],
+  "author": "morfies",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/morfies/pushup.git"
+  },
+  "dependencies": {
+    "co": "^4.6.0",
+    "co-busboy": "^1.3.1",
+    "foreman": "1.4.1",
+    "koa": "^2.0.0-alpha.3",
+    "koa-body": "^1.4.0",
+    "koa-convert": "^1.2.0",
+    "koa-router": "^7.0.0",
+    "mongodb": "^2.1.1",
+    "mongoose": "^4.3.0"
+  }
+}
