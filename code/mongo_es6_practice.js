@@ -1,199 +1,297 @@
 "use strict";
 const MongoClient = require('mongodb').MongoClient;
-const url = 'mongodb://localhost:27017/test';
-const co = require('co');
+const ObjectId = require('mongodb').ObjectID;
+const url = 'mongodb://localhost:27017/weiclass';
+const md5 = require('md5');
 
-// create unique index
-function createIndex() {
-    getDoc('docOne').then(doc => {
-        // createIndex(keys, opts)
-        // keys: hash object of field name and its ordering method
-        // opts: other options for this index, eg. unique to avoid duplicate
-        doc.createIndex({
-            name: 1
-        }, {
-            unique: true
-        });
-    });
-}
-// 1, test insert
-function * normalInsert() {
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-
-        let data = {
-            name: "Lily",
-            desc: "Specialized in singing",
-            career: [{
-                year: 1985,
-                position: 'teacher',
-                type: 1
-            }, {
-                year: 2000,
-                position: 'singer',
-                type: 2
-            }, {
-                year: 2005,
-                position: 'master',
-                type: 3
-            }]
-        };
-        let result = yield doc.insert(data);
-        console.log(result);
-        db.close(); //need to close db connection
-        return result;
-    } catch (e) {
-        console.log('eeeeeeeeeeeeeeeeeeee', e);
-        throw e;        //need to throw error in order for outer branch to catch it
-    }
-}
-// drop a doc
-function dropDoc() {
-    getDoc('docOne').then(doc => {
-        doc.drop();
-    })
-}
-
-//createIndex();
-// should go well
-co(normalInsert).then(function(result) {
-    console.log('in the resolve branch, result:', result);
-}).catch(function(e) {
-    console.log('in the reject branch, reason:', e);
+var db;
+MongoClient.connect(url, function(err, database){
+  if(err){
+    console.error(`Connecting to mongodb error: ${err.message}`);
+    process.exit(1);
+  }
+  db = database;
 });
-/*  first time, data should be inserted successfully, resolve branch should go
-{ result: { ok: 1, n: 1 },
-  ops:
-   [ { name: 'Lily',
-       desc: 'Specialized in singing',
-       career: [Object],
-       _id: 5671090eb933b9f04c9f04b0 } ],
-  insertedCount: 1,
-  insertedIds: [ [ '0' ], 5671090eb933b9f04c9f04b0 ] }
-in the resolve branch, result: { result: { ok: 1, n: 1 },
-  ops:
-   [ { name: 'Lily',
-       desc: 'Specialized in singing',
-       career: [Object],
-       _id: 5671090eb933b9f04c9f04b0 } ],
-  insertedCount: 1,
-  insertedIds: [ [ '0' ], 5671090eb933b9f04c9f04b0 ] }
+
+/**
+ * [saveTeacher description]
+ * @param   {String} teacher.name
+ * @param   {String} teacher.avator	 img url, stored on same server
+ * @param   {String} teacher.desc	 teacher info intro
+ * @param   {String} teacher.createDate
+ * @param   {String} teacher.updateDate
+ * @yield   {Object} yielded with insert result, ObjectId
  */
- 
-// should go wrong, because of unique index
-co(normalInsert);
+exports.saveTeacher = function* (teacher) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('teacher');
+    let result = yield doc.insertOne(teacher);
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
 
-/* after we set up unique index on name field, reject branch should be reached to handle errors.
-eeeeeeeeeeeeeeeeeeee { [MongoError: E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }]
-  name: 'MongoError',
-  message: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
-  driver: true,
-  code: 11000,
-  index: 0,
-  errmsg: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
-  getOperation: [Function],
-  toJSON: [Function],
-  toString: [Function] }
-in the reject branch, reason: { [MongoError: E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }]
-  name: 'MongoError',
-  message: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
-  driver: true,
-  code: 11000,
-  index: 0,
-  errmsg: 'E11000 duplicate key error index: test.docOne.$name_1 dup key: { : "Lily" }',
-  getOperation: [Function],
-  toJSON: [Function],
-  toString: [Function] }
+/**
+ * update teacher data of certain field
+ * @param  {String} objectId [description]
+ * @param  {Object} teacher  [description]
+ * @param  {String} teacher.updateDate
+ * @yield  {Object}          [description]
  */
-
-
-// 2, test updateOne
-function* updateFirstLevelField(){
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-        var newObj = {
-            desc: 'hahaha with $currentDate operator',
-            name: 'morfies'
-        };
-        let result = yield doc.updateOne({_id:new ObjectId("56710bdc20b525e44db2eacf")}, 
-                    {$set:newObj, $currentDate:{updateDate: true}});
-        console.log(result);
-        db.close();
-        return result;
-    } catch (e) {
-        throw e;
-    }
+exports.updateTeacher = function* (objectId, teacher) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('teacher');
+    let result = yield doc.updateOne({_id: new ObjectId(objectId)} , {$set: teacher});
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
 }
 
-// co(updateFirstLevelField);
-
-// 3, test update child document
-// refer to mongodb-manual for more detail about nested document operation
-function* updateChildDocField(){
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-        let result = yield doc.updateOne({"name": "morfies"},
-                    {$set:{"career.0.position":"new position"}})
-        db.close();
-        return result;
-    } catch (e) {
-        console.log(e);
-        throw e;
-    }
+/**
+ * save a class data into db
+ * @param {Array}  data.content  audio ordered array of object
+ *                                {audio:'audio url path',text:'related text speech'}
+ * @param {Array}  data.comment  comments array of object
+ *                                {author,desc,sameVote,fvtVote,hash(author+desc)}
+ * @param {String} [data.title]  [class title]
+ * @param {String} [data.intro]  [class intro]
+ * @param {String} [data.dir]    [class content directory, relate to directory name holding audio files]
+ * @param {String} data.teacher
+ * @param {String} data.createDate
+ * @param {String} data.updateDate
+ * @yield {Object}
+ */
+exports.saveClass = function* (data) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('class');
+    data.createDate = data.updateDate = new Date;
+    data.teacher = data.teacher || "莲子老师";
+    let result = yield doc.insertOne(data);
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+/**
+ * update part of a class data
+ * @param  {String} objectId
+ * @param  {Object} data     new data
+ * @param  {String} teacher.updateDate
+ * @yield  {Object}          [description]
+ */
+exports.updateClass = function* (objectId, data) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('class');
+    data.updateDate = new Date;
+    let result = yield doc.updateOne({_id: new ObjectId(objectId)}, {$set: data});
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
 }
 
-//co(updateChildDocField);
-
-// 4, test find from nested doc
-function* findByChildDocField(){
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-        let result = yield doc.findOne({"career.type": 1});
-        db.close();
-        console.log(result);
-        return result;
-    } catch (e) {
-        throw e;
-    }
+/**
+ * get teacher info
+ * @param {String} name          teacher name
+ * @yield {Object} data
+ */
+exports.getTeacher = function* (name) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('teacher');
+    let result = yield doc.findOne({name: name});
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
 }
-// co(findByChildDocField);
 
-// 5, update child doc, incr number field
-// use the positional "$" operator
-//
-function* incrChildDocField(){
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-        let result = yield doc.updateOne({'name':'morfies','career.year':1985},
-                                         {$inc: {'career.$.type':10}});
-        console.log(result);
-        db.close();
-        return result;
-    }catch(e){
-        throw e;
-    }
+/**
+ * get teacher and related classes data
+ * @param {[type]} name          [description]
+ * @yield {[type]} [description]
+ */
+exports.getTeacherClasses = function* (name) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let classDoc = db.collection('class');
+    let classes = yield classDoc.find({teacher: name}).sort({create_date: -1});
+    //db.close();
+    return classes;
+  } catch (e) {
+    throw e;
+  }
 }
-//co(incrChildDocField);
 
-// 6, update child doc, add item into nested array
-// $ne: return true if values are not equivalent
-// result: add new item to career Array if no item's year is 2001, if already, nothing will do
-function* addItemToNestedArray(){
-    try {
-        let db = yield MongoClient.connect(url);
-        let doc = db.collection('docOne');
-        let result = yield doc.updateOne({'name': 'morfies', 'career.year':{$ne: 2001}},
-                                         {$addToSet: {"career": {'year':2001, 'position':'chef','type':1}}});
-        console.log(result);
-        db.close();
-        return result;
-    } catch (e) {
-        throw e;
-    }
+/**
+ * get single class data, content of audio array and comment array
+ * @param {String} objectId      [description]
+ * @yield {Object} [description]
+ */
+exports.getClassById = function* (objectId) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let classDoc = db.collection('class');
+    let cData = yield classDoc.findOne({_id: new ObjectId(objectId)},{updateDate:0, createDate:0});
+    //db.close();
+    return cData;
+  } catch (e) {
+    throw e;
+  }
 }
-co(addItemToNestedArray);
+/**
+ * save a comment to this class
+ * @param {ObjectID} classId
+ * @param {Object}   comment       {author,desc,sameVote,fvtVote, hash}
+ *                                 hash: generated from 'author+desc'
+ * @yield {[type]}
+ *
+ * TODO: should createIndex on hash field
+ */
+exports.saveComment = function* (classId, comment) {
+  try {
+    if(!comment.desc){
+      throw new Error('fields should not be null');
+    }
+    let hash = comment.hash = md5(comment.author + comment.desc);
+    comment.sameVote = 0;
+    comment.fvtVote = 0;
+    //let db = yield MongoClient.connect(url);
+    let classDoc = db.collection('class');
+    let result = yield classDoc.updateOne({
+      _id: new ObjectId(classId),
+      'comment.hash': {$ne: hash}
+    }, {
+      $addToSet: {'comment': comment},
+      $currentDate: {updateDate: true}
+    });
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+/**
+ * 'I like this question' operation
+ * @param {[type]} classId       [description]
+ * @param {[type]} cmthash       [comment hash string]
+ * @yield {[type]} [description]
+ */
+exports.fvtComment = function* (classId, cmthash){
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('class');
+    let result = yield doc.updateOne({
+      _id: new ObjectId(classId),
+      'comment.hash': cmthash
+    }, {
+      $inc: {'comment.$.fvtVote': 1}
+    });
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+/**
+ * 'I have the same problem' operation
+ * @param {[type]} classId       [description]
+ * @param {[type]} cmthash       [comment hash string]
+ * @yield {[type]} [description]
+ */
+exports.sameComment = function* (classId, cmthash) {
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('class');
+    let result = yield doc.updateOne({
+      _id: new ObjectId(classId),
+      'comment.hash': cmthash
+    }, {
+      $inc: {'comment.$.sameVote': 1}
+    });
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+exports.deleteComment = function* (classId, cmthash){
+  try {
+    // db.class.update({dir:"class-4"},{$pull:{"comment":{"hash":"87069818a331c938af092a5158d2ca5b"}}})
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('class');
+    let result = yield doc.update({
+      _id: new ObjectId(classId)
+    },{
+      $pull:{
+        "comment": {
+          "hash": cmthash
+        }
+      }
+    });
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+exports.getStats = function* (page){
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('vstats');
+    let result = yield doc.find({"page": page},{pv:1, linkv:1}).limit(1).toArray();
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+exports.getStatsReport = function* (cid){
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('vstats');
+    let result = yield doc.find({"page": "class" + cid}).limit(1).toArray();
+    let cdata = yield db.collection('class').find({_id: new ObjectId(cid)}, {dir:1}).limit(1).toArray();
+    if(result.length && cdata.length){
+      result[0]["cindex"] = cdata[0]["dir"];
+    }
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
+
+/**
+ * get all audio pv of a certain class index,
+ * audio file names: 2weike7.mp3, then index is 7
+ * @param {[type]} cindex        [class index]
+ * @yield {[type]} [description]
+ */
+exports.getAudioStatsReport = function* (cindex){
+  try {
+    //let db = yield MongoClient.connect(url);
+    let doc = db.collection('audiostats');
+    let result = yield doc.find({"resource":{$regex: '.*'+cindex+'\\.mp3'}}).toArray();
+    //db.close();
+    return result;
+  } catch (e) {
+    throw e;
+  }
+}
