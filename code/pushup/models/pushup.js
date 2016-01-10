@@ -1,6 +1,16 @@
 "use strict";
 const MongoClient = require('mongodb').MongoClient;
 const url = 'mongodb://localhost:27017/pushup';
+var db;
+// use mongodb connection pool, default pool size is 5
+MongoClient.connect(url, function(err, database){
+    if(err){
+        console.error(`mongo connecting error: ${err.message}`);
+        process.exit(1);
+    }
+    db = database;
+});
+
 /**
  * Add new user to the collection
  * @param  {Object} user
@@ -9,10 +19,10 @@ const url = 'mongodb://localhost:27017/pushup';
 function* userAdd(user){
     try {
         user.createDate = new Date;
-        let db = yield MongoClient.connect(url);
+        //let db = yield MongoClient.connect(url);
         let doc = db.collection('user');
         let result = yield doc.insertOne(user);
-        db.close();
+        //db.close();
         return result;
     } catch (e) {
         console.error('save user error:', e);
@@ -25,10 +35,10 @@ function* userAdd(user){
  */
 function* userInfo(mid){
     try {
-        let db = yield MongoClient.connect(url);
+        //let db = yield MongoClient.connect(url);
         let doc = db.collection('user');
         let user = yield doc.findOne({mid: mid}, {'mid': 1, 'w': 1, 'h': 1, 'sex': 1});
-        db.close();
+        //db.close();
         return user;
     } catch (e) {
         throw e;
@@ -40,10 +50,10 @@ function* userInfo(mid){
  */
 function* deleteUserByMid(mid){
     try {
-        let db = yield MongoClient.connect(url);
+        //let db = yield MongoClient.connect(url);
         let doc = db.collection('user');
         let result = yield doc.findOneAndDelete({mid: mid});
-        db.close();
+        //db.close();
         return result;
     } catch (err) {
         throw err;
@@ -57,10 +67,10 @@ function* deleteUserByMid(mid){
  */
 function* recordAdd(record){
     try {
-        let db = yield MongoClient.connect(url);
+        //let db = yield MongoClient.connect(url);
         let doc = db.collection('pushuprecord');
         let result = yield doc.insertOne(record);
-        db.close();
+        //db.close();
         return result;
     } catch (e) {
         throw e;
@@ -73,7 +83,7 @@ function* recordAdd(record){
 function* getRecordWithinSpan(beginDate, endDate) {
     try {
         console.log('---------------------------1');
-        let db = yield MongoClient.connect(url);
+        //let db = yield MongoClient.connect(url);
         let doc = db.collection('pushuprecord');
         console.log('---------------------------2');
         let result = yield doc.find({timestart:{
@@ -81,7 +91,7 @@ function* getRecordWithinSpan(beginDate, endDate) {
             $lt: endDate
         }}).toArray();
         console.log('---------------------------3');
-        db.close();
+        //db.close();
         return result;
     } catch (err) {
         throw err;
