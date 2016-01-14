@@ -125,6 +125,9 @@ router.get('/qr/:text', function(req, res) {
 并且，node之前最好架设nginx，所有静态资源全部拦截在nginx层，nginx可以相当高效的负载静态资源的请求，并且可以方便设置缓存、压缩等策略，
 只把真正的数据请求接口向下转发到node本身。  
 在使用KOA的过程中，一开始想使用koa-static中间件直接serve静态资源，发现即使设置了maxage，也不能启用浏览器缓存，还没来得及看源码，
-不知是不是bug，我直接切换到由nginx负责serve静态资源，浏览器缓存立马见效了
-![after nginx](https://goo.gl/photos/Qzm7Xqkpu1bEu6uu5)
+不知是不是bug，我直接切换到由nginx负责serve静态资源，浏览器缓存立马见效了  
+
+![with koa-static](https://github.com/morfies/tutorial/blob/node-lyn/img/koa-static.png)  
+![with nginx](https://github.com/morfies/tutorial/blob/node-lyn/img/nginx-static.png)  
+注：以上截图都是在不按F5刷新页面的情况下截图，按F5会强制刷新，即全是200
 
