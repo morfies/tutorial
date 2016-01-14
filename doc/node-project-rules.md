@@ -120,5 +120,11 @@ router.get('/qr/:text', function(req, res) {
 * 测试框架`mocha`；断言库:`should.js, expect.js, chai`；覆盖率`instanbul, jscover, blanket`；Mock库`muk`；测试私有方法:`rewire`；web测试: `supertest`；持续集成: `Travis-cli`
 * 物流系统，直接使用第三方API，[爱快递](http://www.aikuaidi.cn/api/)或者[聚合数据](http://www.juhe.cn/docs/api/id/43)
 
-
+# 动静分离
+后端接口全部restful提供纯数据接口，前端走诸如underscore template或者angular，js异步调用数据接口；  
+并且，node之前最好架设nginx，所有静态资源全部拦截在nginx层，nginx可以相当高效的负载静态资源的请求，并且可以方便设置缓存、压缩等策略，
+只把真正的数据请求接口向下转发到node本身。  
+在使用KOA的过程中，一开始想使用koa-static中间件直接serve静态资源，发现即使设置了maxage，也不能启用浏览器缓存，还没来得及看源码，
+不知是不是bug，我直接切换到由nginx负责serve静态资源，浏览器缓存立马见效了
+![after nginx](https://goo.gl/photos/Qzm7Xqkpu1bEu6uu5)
 
