@@ -130,4 +130,4 @@ router.get('/qr/:text', function(req, res) {
 ![with koa-static](https://github.com/morfies/tutorial/blob/node-lyn/img/koa-static.png)  
 ![with nginx](https://github.com/morfies/tutorial/blob/node-lyn/img/nginx-static.png)  
 注：以上截图都是在不按F5刷新页面的情况下截图，按F5会强制刷新，即全是200
-
+注：node实现静态资源服务器，可以参考朴大早年的作品，很详细，里面可以理解浏览器缓存的工作原理，[链接](https://cnodejs.org/topic/4f16442ccae1f4aa27001071)
