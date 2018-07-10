@@ -14,5 +14,6 @@ Mostly I just want to take this as a roadmap of my own skill development, and ho
 [大型软件系统架构的一些原则](https://github.com/morfies/tutorial/wiki/%E5%A4%A7%E5%9E%8B%E8%BD%AF%E4%BB%B6%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E7%9A%84%E4%B8%80%E4%BA%9B%E5%8E%9F%E5%88%99)  
 [Express项目的单元测试](https://github.com/morfies/tutorial/blob/node-lyn/doc/Express%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%8D%95%E5%85%83%E6%B5%8B%E8%AF%95)  
 [How DNS works](https://github.com/morfies/tutorial/blob/node-lyn/doc/How-DNS-works.md)  
-[炫酷工具]()
-[nodejs并发编程](https://github.com/morfies/tutorial/blob/node-lyn/code/node%20concurrency.md)
+[炫酷工具]()  
+[nodejs并发编程](https://github.com/morfies/tutorial/blob/node-lyn/code/node%20concurrency.md)  
+[遗传算法](https://github.com/morfies/tutorial/blob/node-lyn/code/genetic_programming.md)  
